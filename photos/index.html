@@ -56,6 +56,19 @@
             opacity: 0.3;
         }
 
+        .photo-title {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            color: white;
+            padding: 2rem 1rem 1rem;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            text-align: center;
+        }
+
         .spinner {
             position: absolute;
             font-size: 2rem;
@@ -172,6 +185,7 @@
         <div class="photo-frame" id="photoFrame">
             <div class="spinner" id="spinner">⏳</div>
             <img id="photo" alt="Random foto">
+            <p class="photo-title" id="photoTitle"></p>
         </div>
 
         <button class="next-btn" id="nextBtn">📷 Nākamais foto</button>
@@ -181,36 +195,94 @@
 
     <script>
         const photo = document.getElementById('photo');
+        const photoTitle = document.getElementById('photoTitle');
         const spinner = document.getElementById('spinner');
         const nextBtn = document.getElementById('nextBtn');
         const photoFrame = document.getElementById('photoFrame');
-        let counter = 1;
         let isLoading = false;
 
-        function loadPhoto() {
+        const SUBREDDITS = [
+            'coolguides',
+            'interestingasfuck',
+            'Damnthatsinteresting',
+            'educationalgifs',
+            'foodhacks',
+            'LifeProTips',
+            'mildlyinteresting',
+            'BeAmazed'
+        ];
+
+        let imageQueue = [];
+        let after = {};
+
+        async function fetchImages(subreddit) {
+            const afterParam = after[subreddit] ? `&after=${after[subreddit]}` : '';
+            const url = `https://www.reddit.com/r/${subreddit}/hot.json?limit=50${afterParam}`;
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                after[subreddit] = data.data.after;
+                const posts = data.data.children
+                    .map(c => c.data)
+                    .filter(p =>
+                        !p.over_18 &&
+                        !p.stickied &&
+                        p.url &&
+                        /\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(p.url)
+                    )
+                    .map(p => ({ url: p.url, title: p.title, sub: subreddit }));
+                return posts;
+            } catch (e) {
+                return [];
+            }
+        }
+
+        async function fillQueue() {
+            const sub = SUBREDDITS[Math.floor(Math.random() * SUBREDDITS.length)];
+            const posts = await fetchImages(sub);
+            // Shuffle
+            for (let i = posts.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [posts[i], posts[j]] = [posts[j], posts[i]];
+            }
+            imageQueue.push(...posts);
+        }
+
+        async function loadPhoto() {
             if (isLoading) return;
             isLoading = true;
             photo.classList.add('loading');
             spinner.classList.add('active');
             nextBtn.disabled = true;
+            photoTitle.textContent = '';
 
+            if (imageQueue.length < 3) {
+                await fillQueue();
+            }
+
+            if (imageQueue.length === 0) {
+                // Fallback to picsum
+                const img = new Image();
+                img.onload = () => { showImage(img.src, 'Random foto'); };
+                img.onerror = () => { isLoading = false; loadPhoto(); };
+                img.src = `https://picsum.photos/800/600?random=${Date.now()}`;
+                return;
+            }
+
+            const post = imageQueue.shift();
             const img = new Image();
-            const url = `https://picsum.photos/800/600?random=${counter++}`;
-            img.onload = () => {
-                photo.src = img.src;
-                photo.classList.remove('loading');
-                spinner.classList.remove('active');
-                nextBtn.disabled = false;
-                isLoading = false;
-            };
-            img.onerror = () => {
-                spinner.classList.remove('active');
-                nextBtn.disabled = false;
-                isLoading = false;
-                counter++;
-                loadPhoto();
-            };
-            img.src = url;
+            img.onload = () => { showImage(img.src, post.title); };
+            img.onerror = () => { isLoading = false; loadPhoto(); };
+            img.src = post.url;
+        }
+
+        function showImage(src, title) {
+            photo.src = src;
+            photoTitle.textContent = title || '';
+            photo.classList.remove('loading');
+            spinner.classList.remove('active');
+            nextBtn.disabled = false;
+            isLoading = false;
         }
 
         nextBtn.addEventListener('click', loadPhoto);
@@ -228,7 +300,6 @@
             const dx = e.changedTouches[0].clientX - touchStartX;
             const dy = e.changedTouches[0].clientY - touchStartY;
 
-            // Horizontal swipe (left = next)
             if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
                 if (dx < 0) {
                     loadPhoto();
