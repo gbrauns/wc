@@ -56,17 +56,24 @@
             opacity: 0.3;
         }
 
-        .photo-title {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(transparent, rgba(0,0,0,0.8));
-            color: white;
-            padding: 2rem 1rem 1rem;
-            font-size: 0.95rem;
-            line-height: 1.4;
+        .photo-desc {
+            width: 100%;
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.9);
+            padding: 0.8rem 1rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
             text-align: center;
+        }
+
+        .photo-desc .desc-title {
+            font-weight: 600;
+        }
+
+        .photo-desc .desc-sub {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.5);
+            margin-top: 0.3rem;
         }
 
         .spinner {
@@ -127,6 +134,38 @@
             margin-top: 0.5rem;
         }
 
+        .nav-arrows {
+            display: none;
+        }
+
+        .nav-arrow {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+            background: rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.7);
+            border: none;
+            font-size: 1.5rem;
+            width: 40px;
+            height: 70px;
+            cursor: pointer;
+        }
+
+        .nav-arrow:active {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .nav-arrow-left {
+            left: 0;
+            border-radius: 0 0.5rem 0.5rem 0;
+        }
+
+        .nav-arrow-right {
+            right: 0;
+            border-radius: 0.5rem 0 0 0.5rem;
+        }
+
         /* --- Mobile fullscreen --- */
         @media (max-width: 600px) {
             body {
@@ -158,6 +197,8 @@
 
             .swipe-hint { display: block; }
 
+            .nav-arrows { display: block; }
+
             .back-link {
                 position: fixed;
                 bottom: 0.8rem;
@@ -185,9 +226,16 @@
         <div class="photo-frame" id="photoFrame">
             <div class="spinner" id="spinner">⏳</div>
             <img id="photo" alt="Random foto">
-            <p class="photo-title" id="photoTitle"></p>
+        </div>
+        <div class="photo-desc" id="photoDesc">
+            <div class="desc-title" id="descTitle"></div>
+            <div class="desc-sub" id="descSub"></div>
         </div>
 
+        <div class="nav-arrows">
+            <button class="nav-arrow nav-arrow-left" id="navLeft">‹</button>
+            <button class="nav-arrow nav-arrow-right" id="navRight">›</button>
+        </div>
         <button class="next-btn" id="nextBtn">📷 Nākamais foto</button>
         <p class="swipe-hint">Swipe pa kreisi → nākamais foto</p>
         <a href="/" class="back-link">← Atpakaļ uz sākumlapu</a>
@@ -195,7 +243,8 @@
 
     <script>
         const photo = document.getElementById('photo');
-        const photoTitle = document.getElementById('photoTitle');
+        const descTitle = document.getElementById('descTitle');
+        const descSub = document.getElementById('descSub');
         const spinner = document.getElementById('spinner');
         const nextBtn = document.getElementById('nextBtn');
         const photoFrame = document.getElementById('photoFrame');
@@ -213,6 +262,8 @@
         ];
 
         let imageQueue = [];
+        let history = [];
+        let historyIndex = -1;
         let after = {};
 
         async function fetchImages(subreddit) {
@@ -254,7 +305,8 @@
             photo.classList.add('loading');
             spinner.classList.add('active');
             nextBtn.disabled = true;
-            photoTitle.textContent = '';
+            descTitle.textContent = '';
+            descSub.textContent = '';
 
             if (imageQueue.length < 3) {
                 await fillQueue();
@@ -263,7 +315,7 @@
             if (imageQueue.length === 0) {
                 // Fallback to picsum
                 const img = new Image();
-                img.onload = () => { showImage(img.src, 'Random foto'); };
+                img.onload = () => { showImage(img.src, 'Random foto', ''); };
                 img.onerror = () => { isLoading = false; loadPhoto(); };
                 img.src = `https://picsum.photos/800/600?random=${Date.now()}`;
                 return;
@@ -271,21 +323,51 @@
 
             const post = imageQueue.shift();
             const img = new Image();
-            img.onload = () => { showImage(img.src, post.title); };
+            img.onload = () => { showImage(img.src, post.title, post.sub); };
             img.onerror = () => { isLoading = false; loadPhoto(); };
             img.src = post.url;
         }
 
-        function showImage(src, title) {
+        function showImage(src, title, sub) {
             photo.src = src;
-            photoTitle.textContent = title || '';
+            descTitle.textContent = title || '';
+            descSub.textContent = sub ? `r/${sub}` : '';
             photo.classList.remove('loading');
             spinner.classList.remove('active');
             nextBtn.disabled = false;
             isLoading = false;
+
+            // Save to history
+            if (historyIndex === history.length - 1 || history.length === 0) {
+                history.push({ src, title, sub });
+                historyIndex = history.length - 1;
+            }
+        }
+
+        function goBack() {
+            if (historyIndex <= 0 || isLoading) return;
+            historyIndex--;
+            const item = history[historyIndex];
+            photo.src = item.src;
+            descTitle.textContent = item.title || '';
+            descSub.textContent = item.sub ? `r/${item.sub}` : '';
+        }
+
+        function goForward() {
+            if (historyIndex < history.length - 1) {
+                historyIndex++;
+                const item = history[historyIndex];
+                photo.src = item.src;
+                descTitle.textContent = item.title || '';
+                descSub.textContent = item.sub ? `r/${item.sub}` : '';
+            } else {
+                loadPhoto();
+            }
         }
 
         nextBtn.addEventListener('click', loadPhoto);
+        document.getElementById('navLeft').addEventListener('click', goBack);
+        document.getElementById('navRight').addEventListener('click', goForward);
 
         // --- Swipe detection ---
         let touchStartX = 0;
@@ -302,7 +384,9 @@
 
             if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
                 if (dx < 0) {
-                    loadPhoto();
+                    goForward();
+                } else {
+                    goBack();
                 }
             }
         }, { passive: true });
