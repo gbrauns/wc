@@ -207,7 +207,7 @@
             .stats { gap: 0.5rem; font-size: 0.85rem; }
             .stats span { padding: 0.2rem 0.5rem; }
             .game-container { flex-direction: column; align-items: center; }
-            .game-screen { padding: 0.5rem; }
+            .game-screen { padding: 0.5rem; padding-bottom: 5rem; }
             .touch-controls { display: flex; }
             .side-panel { flex-direction: row; gap: 1rem; }
         }
@@ -337,7 +337,7 @@
         const ROWS = 20;
 
         function calcCellSize() {
-            const maxH = window.innerHeight - 220;
+            const maxH = window.innerHeight - 280;
             const maxW = window.innerWidth * 0.9;
             return Math.floor(Math.min(maxW / COLS, maxH / ROWS, 30));
         }
@@ -439,31 +439,44 @@
         document.getElementById('tRotate').addEventListener('click', rotatePiece);
         document.getElementById('tDrop').addEventListener('click', hardDrop);
 
-        // --- Tap on canvas to move piece horizontally ---
+        // --- Tap / double-tap on canvas ---
+        let lastTapTime = 0;
         canvas.addEventListener('click', (e) => {
             if (!gameRunning || !currentPiece) return;
-            const rect = canvas.getBoundingClientRect();
-            const tapCol = Math.floor((e.clientX - rect.left) / CELL);
-            // Find the leftmost filled column of the piece
-            let pieceLeft = COLS;
-            let pieceRight = 0;
-            for (let r = 0; r < currentPiece.shape.length; r++) {
-                for (let c = 0; c < currentPiece.shape[r].length; c++) {
-                    if (currentPiece.shape[r][c]) {
-                        pieceLeft = Math.min(pieceLeft, c);
-                        pieceRight = Math.max(pieceRight, c);
+
+            const now = Date.now();
+            if (now - lastTapTime < 350) {
+                // Double tap = hard drop
+                lastTapTime = 0;
+                hardDrop();
+                return;
+            }
+            lastTapTime = now;
+
+            // Single tap = move horizontally
+            setTimeout(() => {
+                if (lastTapTime === 0) return; // was double tap
+                const rect = canvas.getBoundingClientRect();
+                const tapCol = Math.floor((e.clientX - rect.left) / CELL);
+                let pieceLeft = COLS;
+                let pieceRight = 0;
+                for (let r = 0; r < currentPiece.shape.length; r++) {
+                    for (let c = 0; c < currentPiece.shape[r].length; c++) {
+                        if (currentPiece.shape[r][c]) {
+                            pieceLeft = Math.min(pieceLeft, c);
+                            pieceRight = Math.max(pieceRight, c);
+                        }
                     }
                 }
-            }
-            const pieceCenter = currentPiece.x + Math.floor((pieceLeft + pieceRight) / 2);
-            const dx = tapCol - pieceCenter;
-            // Move step by step
-            const step = dx > 0 ? 1 : -1;
-            for (let i = 0; i < Math.abs(dx); i++) {
-                if (!collides(currentPiece, step, 0)) {
-                    currentPiece.x += step;
+                const pieceCenter = currentPiece.x + Math.floor((pieceLeft + pieceRight) / 2);
+                const dx = tapCol - pieceCenter;
+                const step = dx > 0 ? 1 : -1;
+                for (let i = 0; i < Math.abs(dx); i++) {
+                    if (!collides(currentPiece, step, 0)) {
+                        currentPiece.x += step;
+                    }
                 }
-            }
+            }, 360);
         });
 
         // --- Keyboard ---
