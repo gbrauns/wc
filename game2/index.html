@@ -2,10 +2,10 @@
 <html lang="lv">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>WC — Kaku Tetris!</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; touch-action: manipulation; }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -177,19 +177,19 @@
         .touch-controls {
             display: none;
             gap: 0.5rem;
-            margin-top: 1rem;
+            margin-top: 0.5rem;
             flex-wrap: wrap;
             justify-content: center;
         }
 
         .touch-btn {
-            width: 60px;
-            height: 60px;
+            width: 56px;
+            height: 56px;
             border: none;
             border-radius: 1rem;
             background: #e65100;
             color: white;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             cursor: pointer;
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
@@ -203,7 +203,11 @@
         @media (max-width: 480px) {
             .menu-logo { font-size: 3.5rem; }
             .menu-title { font-size: 1.8rem; }
+            .game-header h1 { font-size: 1.3rem; }
+            .stats { gap: 0.5rem; font-size: 0.85rem; }
+            .stats span { padding: 0.2rem 0.5rem; }
             .game-container { flex-direction: column; align-items: center; }
+            .game-screen { padding: 0.5rem; }
             .touch-controls { display: flex; }
             .side-panel { flex-direction: row; gap: 1rem; }
         }
@@ -331,11 +335,26 @@
         // --- Constants ---
         const COLS = 10;
         const ROWS = 20;
-        const CELL = 30;
+
+        function calcCellSize() {
+            const maxH = window.innerHeight - 220;
+            const maxW = window.innerWidth * 0.9;
+            return Math.floor(Math.min(maxW / COLS, maxH / ROWS, 30));
+        }
+
+        let CELL = calcCellSize();
         canvas.width = COLS * CELL;
         canvas.height = ROWS * CELL;
         nextCanvas.width = 4 * CELL;
         nextCanvas.height = 4 * CELL;
+
+        window.addEventListener('resize', () => {
+            CELL = calcCellSize();
+            canvas.width = COLS * CELL;
+            canvas.height = ROWS * CELL;
+            nextCanvas.width = 4 * CELL;
+            nextCanvas.height = 4 * CELL;
+        });
 
         const COLORS = ['#8d6e63','#a1887f','#795548','#6d4c41','#5d4037','#4e342e','#3e2723'];
 
@@ -419,6 +438,33 @@
         document.getElementById('tDown').addEventListener('click', () => movePiece(0, 1));
         document.getElementById('tRotate').addEventListener('click', rotatePiece);
         document.getElementById('tDrop').addEventListener('click', hardDrop);
+
+        // --- Tap on canvas to move piece horizontally ---
+        canvas.addEventListener('click', (e) => {
+            if (!gameRunning || !currentPiece) return;
+            const rect = canvas.getBoundingClientRect();
+            const tapCol = Math.floor((e.clientX - rect.left) / CELL);
+            // Find the leftmost filled column of the piece
+            let pieceLeft = COLS;
+            let pieceRight = 0;
+            for (let r = 0; r < currentPiece.shape.length; r++) {
+                for (let c = 0; c < currentPiece.shape[r].length; c++) {
+                    if (currentPiece.shape[r][c]) {
+                        pieceLeft = Math.min(pieceLeft, c);
+                        pieceRight = Math.max(pieceRight, c);
+                    }
+                }
+            }
+            const pieceCenter = currentPiece.x + Math.floor((pieceLeft + pieceRight) / 2);
+            const dx = tapCol - pieceCenter;
+            // Move step by step
+            const step = dx > 0 ? 1 : -1;
+            for (let i = 0; i < Math.abs(dx); i++) {
+                if (!collides(currentPiece, step, 0)) {
+                    currentPiece.x += step;
+                }
+            }
+        });
 
         // --- Keyboard ---
         document.addEventListener('keydown', (e) => {
