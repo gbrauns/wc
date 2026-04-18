@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WC — Interesanti foto</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #37474f;
+            overflow: hidden;
+        }
+
+        /* --- Desktop --- */
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 90%;
+            max-width: 700px;
+            padding: 1.5rem 0;
+            flex: 1;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #fff;
+            margin-bottom: 1rem;
+        }
+
+        .photo-frame {
+            width: 100%;
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .photo-frame img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: block;
+            transition: opacity 0.3s;
+        }
+
+        .photo-frame img.loading {
+            opacity: 0.3;
+        }
+
+        .spinner {
+            position: absolute;
+            font-size: 2rem;
+            display: none;
+        }
+
+        .spinner.active {
+            display: block;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .next-btn {
+            margin-top: 1rem;
+            padding: 1rem 3rem;
+            background: #00695c;
+            color: white;
+            border: none;
+            border-radius: 2rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .next-btn:hover {
+            background: #004d40;
+            transform: scale(1.05);
+        }
+
+        .next-btn:active {
+            transform: scale(0.97);
+        }
+
+        .back-link {
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+        .swipe-hint {
+            display: none;
+            color: rgba(255,255,255,0.4);
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        /* --- Mobile fullscreen --- */
+        @media (max-width: 600px) {
+            body {
+                background: #000;
+            }
+
+            .container {
+                width: 100%;
+                padding: 0;
+                height: 100vh;
+                height: 100dvh;
+            }
+
+            h1 { display: none; }
+
+            .photo-frame {
+                width: 100%;
+                flex: 1;
+                border-radius: 0;
+            }
+
+            .photo-frame img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+            }
+
+            .next-btn { display: none; }
+
+            .swipe-hint { display: block; }
+
+            .back-link {
+                position: fixed;
+                bottom: 0.8rem;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 10;
+                background: rgba(0,0,0,0.5);
+                padding: 0.4rem 1rem;
+                border-radius: 1rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (min-width: 601px) {
+            body {
+                background: linear-gradient(135deg, #1a1a2e, #16213e);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📸 Interesanti foto</h1>
+
+        <div class="photo-frame" id="photoFrame">
+            <div class="spinner" id="spinner">⏳</div>
+            <img id="photo" alt="Random foto">
+        </div>
+
+        <button class="next-btn" id="nextBtn">📷 Nākamais foto</button>
+        <p class="swipe-hint">Swipe pa kreisi → nākamais foto</p>
+        <a href="/" class="back-link">← Atpakaļ uz sākumlapu</a>
+    </div>
+
+    <script>
+        const photo = document.getElementById('photo');
+        const spinner = document.getElementById('spinner');
+        const nextBtn = document.getElementById('nextBtn');
+        const photoFrame = document.getElementById('photoFrame');
+        let counter = 1;
+        let isLoading = false;
+
+        function loadPhoto() {
+            if (isLoading) return;
+            isLoading = true;
+            photo.classList.add('loading');
+            spinner.classList.add('active');
+            nextBtn.disabled = true;
+
+            const img = new Image();
+            const url = `https://picsum.photos/800/600?random=${counter++}`;
+            img.onload = () => {
+                photo.src = img.src;
+                photo.classList.remove('loading');
+                spinner.classList.remove('active');
+                nextBtn.disabled = false;
+                isLoading = false;
+            };
+            img.onerror = () => {
+                spinner.classList.remove('active');
+                nextBtn.disabled = false;
+                isLoading = false;
+                counter++;
+                loadPhoto();
+            };
+            img.src = url;
+        }
+
+        nextBtn.addEventListener('click', loadPhoto);
+
+        // --- Swipe detection ---
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        photoFrame.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        photoFrame.addEventListener('touchend', (e) => {
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            const dy = e.changedTouches[0].clientY - touchStartY;
+
+            // Horizontal swipe (left = next)
+            if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
+                if (dx < 0) {
+                    loadPhoto();
+                }
+            }
+        }, { passive: true });
+
+        loadPhoto();
+    </script>
+</body>
+</html>
