@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WC — Viesu gr&#257;mata</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #37474f;
+            padding: 1.5rem 0;
+        }
+
+        .container {
+            max-width: 700px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 0.3rem;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.3rem;
+            color: #00695c;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: #00897b;
+            margin-bottom: 1rem;
+            font-style: italic;
+        }
+
+        .card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 0.8rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            color: #00695c;
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border: 2px solid #b2dfdb;
+            border-radius: 0.5rem;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: border-color 0.3s;
+            outline: none;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: #00695c;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.6rem 1.5rem;
+            background: #00695c;
+            color: white;
+            border: none;
+            border-radius: 2rem;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            font-family: inherit;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background: #004d40;
+            transform: scale(1.05);
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-orange {
+            background: #e65100;
+        }
+
+        .btn-orange:hover {
+            background: #bf360c;
+        }
+
+        .btn-back {
+            background: #78909c;
+            font-size: 0.85rem;
+            padding: 0.5rem 1.2rem;
+        }
+
+        .btn-back:hover {
+            background: #546e7a;
+        }
+
+        .alert {
+            padding: 0.8rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.8rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .alert-warning {
+            background: #fff3e0;
+            border: 1px solid #ffcc80;
+            color: #e65100;
+        }
+
+        .alert-success {
+            background: #e8f5e9;
+            border: 1px solid #a5d6a7;
+            color: #2e7d32;
+        }
+
+        .entries-section h2 {
+            font-size: 1.3rem;
+            color: #00695c;
+            margin-bottom: 0.8rem;
+        }
+
+        .entry {
+            background: #f5f5f5;
+            border-radius: 0.7rem;
+            padding: 0.8rem 1rem;
+            margin-bottom: 0.6rem;
+            text-align: left;
+        }
+
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.3rem;
+        }
+
+        .entry-name {
+            font-weight: 700;
+            color: #00695c;
+            font-size: 1rem;
+        }
+
+        .entry-dates {
+            font-size: 0.75rem;
+            color: #90a4ae;
+            text-align: right;
+        }
+
+        .entry-comment {
+            font-size: 0.9rem;
+            color: #455a64;
+            line-height: 1.4;
+        }
+
+        .no-entries {
+            color: #90a4ae;
+            font-style: italic;
+            padding: 1rem;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #b2dfdb;
+            border-top-color: #00695c;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .edit-info {
+            font-size: 0.85rem;
+            color: #78909c;
+            margin-bottom: 0.5rem;
+        }
+
+        footer {
+            margin-top: 1rem;
+            font-size: 0.75rem;
+            color: #78909c;
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 1rem 0; }
+            .logo { font-size: 2.2rem; }
+            h1 { font-size: 1.4rem; }
+            .card { padding: 1rem; }
+            .btn { padding: 0.5rem 1.2rem; font-size: 0.85rem; }
+            .entry-header { flex-direction: column; align-items: flex-start; gap: 0.2rem; }
+            .entry-dates { text-align: left; }
+        }
+        .site-logo {
+            position: fixed;
+            top: 0.7rem;
+            left: 0.7rem;
+            z-index: 1000;
+            height: 36px;
+            transition: transform 0.2s;
+        }
+
+        .site-logo:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <a href="/"><img src="/logo.svg" alt="WC" class="site-logo"></a>
+    <div class="container">
+        <div class="logo">&#128214;</div>
+        <h1>Viesu gr&#257;mata</h1>
+        <p class="subtitle">Atst&#257;j savu v&#275;st&#299;jumu!</p>
+
+        <div class="card" id="formCard">
+            <div class="alert alert-warning" id="alertWarning"></div>
+            <div class="alert alert-success" id="alertSuccess"></div>
+
+            <form id="guestForm">
+                <div class="form-group">
+                    <label for="nameInput">V&#257;rds *</label>
+                    <input type="text" id="nameInput" maxlength="20" required placeholder="Tavs v&#257;rds">
+                </div>
+                <div class="form-group">
+                    <label for="commentInput">Koment&#257;rs</label>
+                    <textarea id="commentInput" maxlength="500" placeholder="Raksti ko v&#275;lies..."></textarea>
+                </div>
+                <button type="submit" class="btn" id="submitBtn">&#9997;&#65039; Ierakst&#299;t</button>
+                <button type="button" class="btn btn-orange" id="editBtn" style="display:none;" onclick="submitEdit()">&#128221; Labot koment&#257;ru</button>
+            </form>
+        </div>
+
+        <div class="card entries-section">
+            <h2>&#128172; P&#275;d&#275;jais ieraksts</h2>
+            <div id="latestEntry">
+                <div class="spinner"></div>
+            </div>
+            <p id="viewAllText" style="margin-top:0.8rem; display:none;">
+                <a href="#" id="viewAllLink" class="btn" style="font-size:0.85rem;">&#128203; Vai v&#275;lies apskat&#299;t visus ierakstus?</a>
+            </p>
+            <div id="allEntries" style="display:none; margin-top:0.8rem;"></div>
+        </div>
+
+        <a href="/" class="btn btn-back">&#8592; Atpaka&#316;</a>
+
+        <footer>&copy; 2026 WC &mdash; Kur katrs apmekl&#275;jums ir neaizmirstams.</footer>
+    </div>
+
+    <script>
+        const API = '/api/guestbook.php';
+        const form = document.getElementById('guestForm');
+        const nameInput = document.getElementById('nameInput');
+        const commentInput = document.getElementById('commentInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const editBtn = document.getElementById('editBtn');
+        const alertWarning = document.getElementById('alertWarning');
+        const alertSuccess = document.getElementById('alertSuccess');
+        const latestEntry = document.getElementById('latestEntry');
+        const allEntries = document.getElementById('allEntries');
+        const viewAllText = document.getElementById('viewAllText');
+        const viewAllLink = document.getElementById('viewAllLink');
+
+        let editMode = false;
+
+        function hideAlerts() {
+            alertWarning.style.display = 'none';
+            alertSuccess.style.display = 'none';
+        }
+
+        function showWarning(msg) {
+            hideAlerts();
+            alertWarning.textContent = msg;
+            alertWarning.style.display = 'block';
+        }
+
+        function showSuccess(msg) {
+            hideAlerts();
+            alertSuccess.textContent = msg;
+            alertSuccess.style.display = 'block';
+        }
+
+        function enterEditMode(entry) {
+            editMode = true;
+            nameInput.value = entry.name;
+            nameInput.readOnly = true;
+            commentInput.value = entry.comment || '';
+            commentInput.focus();
+            submitBtn.style.display = 'none';
+            editBtn.style.display = 'inline-block';
+            showWarning('Šis vārds jau ir reģistrēts! Vari labot savu komentāru.');
+        }
+
+        function exitEditMode() {
+            editMode = false;
+            nameInput.readOnly = false;
+            nameInput.value = '';
+            commentInput.value = '';
+            submitBtn.style.display = 'inline-block';
+            editBtn.style.display = 'none';
+            hideAlerts();
+        }
+
+        function renderEntry(e) {
+            let dates = e.created_at;
+            if (e.updated_at) {
+                dates += '<br>labots: ' + e.updated_at;
+            }
+            return `<div class="entry">
+                <div class="entry-header">
+                    <span class="entry-name">${e.name}</span>
+                    <span class="entry-dates">${dates}</span>
+                </div>
+                ${e.comment ? '<p class="entry-comment">' + e.comment + '</p>' : ''}
+            </div>`;
+        }
+
+        async function loadEntries() {
+            try {
+                const res = await fetch(API);
+                const entries = await res.json();
+                if (entries.length === 0) {
+                    latestEntry.innerHTML = '<p class="no-entries">Vēl nav neviena ieraksta. Būsi pirmais!</p>';
+                    viewAllText.style.display = 'none';
+                    allEntries.style.display = 'none';
+                    return;
+                }
+                latestEntry.innerHTML = renderEntry(entries[0]);
+                if (entries.length > 1) {
+                    viewAllText.style.display = 'block';
+                    allEntries.innerHTML = entries.slice(1).map(renderEntry).join('');
+                } else {
+                    viewAllText.style.display = 'none';
+                }
+            } catch (err) {
+                latestEntry.innerHTML = '<p class="no-entries">Neizdevās ielādēt ierakstus.</p>';
+            }
+        }
+
+        viewAllLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            allEntries.style.display = 'block';
+            viewAllText.style.display = 'none';
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (editMode) return;
+
+            const name = nameInput.value.trim();
+            const comment = commentInput.value.trim();
+
+            if (!name) return;
+
+            submitBtn.disabled = true;
+            try {
+                const res = await fetch(API, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, comment })
+                });
+                const data = await res.json();
+
+                if (data.exists) {
+                    enterEditMode(data.entry);
+                } else if (data.success) {
+                    showSuccess('Ieraksts veiksmīgi pievienots!');
+                    nameInput.value = '';
+                    commentInput.value = '';
+                    loadEntries();
+                    setTimeout(hideAlerts, 3000);
+                }
+            } catch (err) {
+                showWarning('Kļūda! Mēģini vēlreiz.');
+            }
+            submitBtn.disabled = false;
+        });
+
+        async function submitEdit() {
+            const name = nameInput.value.trim();
+            const comment = commentInput.value.trim();
+
+            editBtn.disabled = true;
+            try {
+                const res = await fetch(API, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, comment })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    showSuccess('Komentārs veiksmīgi atjaunināts!');
+                    exitEditMode();
+                    loadEntries();
+                    setTimeout(hideAlerts, 3000);
+                }
+            } catch (err) {
+                showWarning('Kļūda! Mēģini vēlreiz.');
+            }
+            editBtn.disabled = false;
+        }
+
+        loadEntries();
+    </script>
+</body>
+</html>

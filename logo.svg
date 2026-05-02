@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 50">
+  <rect width="140" height="50" rx="12" fill="#00695c"/>
+  <!-- Toilet icon -->
+  <g transform="translate(12, 7)" fill="white">
+    <!-- Tank -->
+    <rect x="4" y="0" width="18" height="12" rx="3"/>
+    <!-- Lid -->
+    <rect x="1" y="11" width="24" height="4" rx="2"/>
+    <!-- Bowl -->
+    <path d="M2,15 L24,15 L22,30 C21,34 18,36 13,36 C8,36 5,34 4,30 Z"/>
+    <!-- Flush button -->
+    <rect x="11" y="3" width="4" height="4" rx="1" fill="#00695c"/>
+  </g>
+  <!-- WC text -->
+  <text x="46" y="36" font-family="'Segoe UI', Tahoma, sans-serif" font-size="32" font-weight="800" fill="white">WC</text>
+</svg>
