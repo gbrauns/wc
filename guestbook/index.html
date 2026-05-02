@@ -269,11 +269,9 @@
             </form>
         </div>
 
-        <div class="card entries-section">
+        <div class="card entries-section" id="entriesSection" style="display:none;">
             <h2>&#128172; P&#275;d&#275;jais ieraksts</h2>
-            <div id="latestEntry">
-                <div class="spinner"></div>
-            </div>
+            <div id="latestEntry"></div>
             <p id="viewAllText" style="margin-top:0.8rem; display:none;">
                 <a href="#" id="viewAllLink" class="btn" style="font-size:0.85rem;">&#128203; Vai v&#275;lies apskat&#299;t visus ierakstus?</a>
             </p>
@@ -353,16 +351,17 @@
             </div>`;
         }
 
+        const entriesSection = document.getElementById('entriesSection');
+
         async function loadEntries() {
             try {
                 const res = await fetch(API);
                 const entries = await res.json();
                 if (entries.length === 0) {
-                    latestEntry.innerHTML = '<p class="no-entries">Vēl nav neviena ieraksta. Būsi pirmais!</p>';
-                    viewAllText.style.display = 'none';
-                    allEntries.style.display = 'none';
+                    entriesSection.style.display = 'none';
                     return;
                 }
+                entriesSection.style.display = 'block';
                 latestEntry.innerHTML = renderEntry(entries[0]);
                 if (entries.length > 1) {
                     viewAllText.style.display = 'block';
@@ -439,7 +438,6 @@
             editBtn.disabled = false;
         }
 
-        loadEntries();
     </script>
 </body>
 </html>
