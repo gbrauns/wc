@@ -257,9 +257,22 @@
             .game-area { height: 55vh; }
             .stats { gap: 1rem; font-size: 0.95rem; }
         }
+        .site-logo {
+            position: fixed;
+            top: 0.7rem;
+            left: 0.7rem;
+            z-index: 1000;
+            height: 36px;
+            transition: transform 0.2s;
+        }
+
+        .site-logo:hover {
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body>
+    <a href="/"><img src="/logo.svg" alt="WC" class="site-logo"></a>
 
     <!-- MENU SCREEN -->
     <div class="menu-screen" id="menuScreen">

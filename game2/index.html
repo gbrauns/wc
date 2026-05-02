@@ -215,9 +215,22 @@
         @media (pointer: coarse) {
             .touch-controls { display: flex; }
         }
+        .site-logo {
+            position: fixed;
+            top: 0.7rem;
+            left: 0.7rem;
+            z-index: 1000;
+            height: 36px;
+            transition: transform 0.2s;
+        }
+
+        .site-logo:hover {
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body>
+    <a href="/"><img src="/logo.svg" alt="WC" class="site-logo"></a>
 
     <!-- MENU -->
     <div class="menu-screen" id="menuScreen">
